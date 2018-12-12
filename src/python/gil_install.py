@@ -45,6 +45,10 @@ class GilInstallController:
     def create(self, args, extra_args):
         install_info = {}
 
+        if len(args) < 1:
+            print("Error: you should provide at least the name of MACRO that will represent project path")
+            return
+
         install_macro = args[0]
 
         print("Using MACRO installation: " + install_macro)
@@ -114,10 +118,19 @@ class GilInstallController:
                     f.write("\n")
                 f.close()
 
+    def show_help(self, args, extra_args):
+        help_text = "gil-install: generation and installation of projects based on bashrc.sh\n\n"
+        help_text = help_text + "\tCreate a installation file:\n\t$ gil-install -c\n\n"
+        help_text = help_text + "\tInstall a project:\n\t$ gil-install -i\n\n"
+
+        print(help_text)
+
     def get_commands(self):
         commands_parse = {
             '-c'           : self.create,
             '-i'           : self.install,
+            '-h'          : self.show_help,
+            '--help'       : self.show_help,
             '--create'     : self.create,
             '--install'    : self.install,
             # '--list-args'  : self.list_args,
