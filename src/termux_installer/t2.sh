@@ -1,5 +1,5 @@
 # DOT FILES SETUP (1/2)
-DOTFILES_DIR=$HOME/.dotfiles
+export DOTFILES_DIR=$HOME/.dotfiles
 git clone git@github.com:adrianogil/dotfiles.git $DOTFILES_DIR
 
 cd $DOTFILES_DIR
@@ -9,17 +9,18 @@ cd $DOTFILES_DIR
 GILTOOLS_DIR=$HOME/workspace/scripts/gil-tools
 mkdir -p $HOME/workspace/scripts
 git clone git@github.com:adrianogil/gil-tools.git $GILTOOLS_DIR
-cd $GILTOOLS_DIR
 
 pkg install python2 -y
+pkg install tmux -y
 
-python2 src/python/gil_install.py -i
+source $HOME/.bashrc
 
-source ~/.bashrc
+cd $GILTOOLS_DIR/src
+source $HOME/.bashrc
 
 # Finish DOT FILES SETUP (2/2)
 cd $DOTFILES_DIR
-gil-install -i
+python2 $GILTOOLS_DIR/src/python/gil_install.py -i
 
 function smart_repo_install()
 {
@@ -28,7 +29,9 @@ function smart_repo_install()
 
     git clone $repo $target_folder
     cd $target_folder
-    gil-install -i
+
+    cd "$(dirname "$(find . -type f -name install.gil | head -1)")"
+    python2 $GILTOOLS_DIR/src/python/gil_install.py -i
 }
 
 # CONFIG-FILES SETUP
@@ -45,8 +48,8 @@ function save_repo_track()
 
     cd $repo_folder
 
-    mydirs -s
-    rw -s
+    $HOME/workspace/scripts/mydirs/src/mydirs.sh -s
+    python2 $HOME/workspace/scripts/git-repowatcher/src/gitrepowatcher.py -s
 }
 
 save_repo_track $HOME/workspace/scripts/config-files
