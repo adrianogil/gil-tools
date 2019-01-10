@@ -75,6 +75,39 @@ class GilInstallController:
         with open(self.installation_file, 'w') as f:
             json.dump(install_info, f)
 
+    def verify_installation(self, args, extra_args):
+
+        target_bashrc = self.installation_file
+        if len(args) > 0:
+            target_bashrc = args[0]
+
+        with open(target_bashrc, 'r') as f:
+            install_info = json.load(f)
+
+        if 'DIR_MACRO' not in install_info:
+            print("Wrong usage!")
+            return
+
+        install_macro = install_info['DIR_MACRO']
+
+        found = False
+        try:
+            verify_dir_install_cmd = "cat '" + self.config_file + "' | grep '" + \
+                install_macro + "'"
+            verify_dir_install_output = subprocess.check_output(verify_dir_install_cmd, shell=True)
+            verify_dir_install_output = verify_dir_install_output.strip()
+
+            found = verify_dir_install_output != ""
+        except:
+            # Maybe the export does not exist. So let's create it
+            # print("It seems that export config file does not exist. Let's create it")
+            found = False
+
+        if found:
+            print("The current repo is already installed!")
+        else:
+            print("The current repo is not installed!")
+
     def install(self, args, extra_args):
         with open(self.installation_file, 'r') as f:
             install_info = json.load(f)
@@ -129,10 +162,12 @@ class GilInstallController:
         commands_parse = {
             '-c'           : self.create,
             '-i'           : self.install,
-            '-h'          : self.show_help,
+            '-h'           : self.show_help,
+            '-v'           : self.verify_installation,
             '--help'       : self.show_help,
             '--create'     : self.create,
             '--install'    : self.install,
+            '--verify'     : self.verify_installation,
             # '--list-args'  : self.list_args,
             # '--auto-list'  : self.auto_list,
             # 'no-args'      : self.handle_no_args,
