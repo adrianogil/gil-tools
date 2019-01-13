@@ -136,7 +136,9 @@ class GilInstallController:
                 print("It seems that export config file does not exist. Let's create it")
                 found = False
 
-            if not found:
+            if found:
+                print("Project already installed!")
+            else:
                 if os.path.exists(self.config_file):
                     f = open(self.config_file, 'a+')
                 else:
