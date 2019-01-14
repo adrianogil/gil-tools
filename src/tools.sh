@@ -11,7 +11,10 @@ function install_mac_utils()
 function gil-clone()
 {
     # git clone and enter repo directory
-    gol $1
+
+    target_url=$1  
+    target_folder=$2
+    gol $1 $target_folder
     mydirs -s
     rw -s
 }
