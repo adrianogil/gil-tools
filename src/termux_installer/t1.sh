@@ -1,3 +1,6 @@
+# In order to run:
+# $ curl adrianogil.github.io/sh/t1.sh 
+
 installer_folder=$HOME/workspace
 
 pkg install git -y
