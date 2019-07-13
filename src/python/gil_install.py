@@ -166,6 +166,10 @@ class GilInstallController:
                     f.write("\n")
                 f.close()
 
+            print("Verify if there aren't any python requirements files")
+            find_requeriments_cmd = "find . -name 'requirements.txt' | xargs -I {} pip install -r {}"
+            subprocess.check_output(find_requeriments_cmd, shell=True)
+
 
     def show_help(self, args, extra_args):
         help_text = "gil-install: generation and installation of projects based on bashrc.sh\n\n"
