@@ -12,7 +12,7 @@ def is_float(s):
         return True
     except ValueError:
         pass
- 
+
     return False
 
 from subprocess import *
@@ -109,11 +109,24 @@ class GilInstallController:
             print("The current repo is not installed!")
 
     def install(self, args, extra_args):
-        with open(self.installation_file, 'r') as f:
+        if os.path.exists(self.installation_file):
+            current_dir = os.getcwd()
+        else:
+            find_gilfile_cmd = "find . -name 'install.gil' | xargs -I {} dirname {}"
+            find_gilfile_output = subprocess.check_output(find_gilfile_cmd, shell=True)
+            find_gilfile_output = find_gilfile_output.strip()
+
+            if find_gilfile_output == "":
+                print("No 'install.gil' file found!!!")
+                exit()
+            else:
+                current_dir = find_gilfile_output
+
+
+        with open(os.path.join(current_dir, self.installation_file), 'r') as f:
             install_info = json.load(f)
 
         if 'DIR_MACRO' in install_info:
-            current_dir = os.getcwd()
 
             git_root_path = get_git_root(current_dir)
             git_url = get_git_url()
@@ -146,12 +159,13 @@ class GilInstallController:
                 f.write("##### %s #####\n" % (repo_name,))
                 f.write("# GitRepo: %s\n" % (git_url,))
                 f.write("# InstallDir: %s\n" % (git_root_path,))
-                f.write("export %s=%s\n" % (install_macro,current_dir))
+                f.write("export %s=%s\n" % (install_macro, current_dir))
 
                 if 'BASHRC' in install_info:
                     f.write("source $%s/%s\n" % (install_macro, install_info['BASHRC']))
                     f.write("\n")
                 f.close()
+
 
     def show_help(self, args, extra_args):
         help_text = "gil-install: generation and installation of projects based on bashrc.sh\n\n"
