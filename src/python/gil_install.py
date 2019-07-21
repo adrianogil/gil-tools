@@ -109,9 +109,8 @@ class GilInstallController:
             print("The current repo is not installed!")
 
     def install(self, args, extra_args):
-        if os.path.exists(self.installation_file):
-            current_dir = os.getcwd()
-        else:
+        current_dir = os.getcwd()
+        if not os.path.exists(self.installation_file):
             find_gilfile_cmd = "find . -name 'install.gil' | xargs -I {} dirname {}"
             find_gilfile_output = subprocess.check_output(find_gilfile_cmd, shell=True)
             find_gilfile_output = find_gilfile_output.strip()
@@ -120,7 +119,7 @@ class GilInstallController:
                 print("No 'install.gil' file found!!!")
                 exit()
             else:
-                current_dir = find_gilfile_output
+                current_dir = os.path.join(current_dir, find_gilfile_output)
 
 
         with open(os.path.join(current_dir, self.installation_file), 'r') as f:
