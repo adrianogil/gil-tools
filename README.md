@@ -3,12 +3,19 @@ Personal tools
 
 ## Command line options
 
-Clone and go inside directory, add it to mydirs and to GitRepoWatcher
+Install gil-projects, i.e., projects that have install.gil file
+```
+cd <gil-project-path>
+gil-install -i
+```
+
+
+Clone a repo, enter it and add it to mydirs and to GitRepoWatcher tools
 ```
 gil-clone <url>
 ```
 
-## Installation
+## Installation - Manually add configuration to bashrc
 
 Add the following lines to your bashrc:
 ```
@@ -16,6 +23,18 @@ export AGIL_SCRIPTS_DIR=/<path-to>/gil-tools/
 source ${AGIL_SCRIPTS_DIR}/bashrc.sh
 ```
 (WIP I am going to create a better setup)
+
+## Installation - using gil-install
+
+Requirements:
+* you should be have a .bash_install file loaded by .bashrc
+* or you can use my dotfiles project
+
+
+```
+cd <gil-tools-path>/src
+python3 python/gil_install.py -i
+```
 
 
 ## Planned features
