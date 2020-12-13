@@ -29,7 +29,9 @@ def is_float(s):
 
 
 def get_git_root(p):
-    """Return None if p is not in a git repo, or the root of the repo if it is"""
+    """
+    Returns None if p is not in a git repo, or the root of the repo if it is
+    """
     if call(["git", "branch"], stderr=STDOUT, stdout=open(os.devnull, "w"), cwd=p) != 0:
         return None
     else:
@@ -47,8 +49,9 @@ def get_git_url():
 
 
 class GilInstallController:
+    installation_file = "install.gil"
+
     def __init__(self):
-        self.installation_file = "install.gil"
         self.config_file = os.environ["HOME"] + "/.bash_install"
 
     def finish(self):
@@ -92,11 +95,13 @@ class GilInstallController:
 
     def verify_installation(self, args, extra_args):
 
-        target_bashrc = self.installation_file
+        target_install_file = self.installation_file
         if len(args) > 0:
-            target_bashrc = args[0]
+            target_install_file = args[0]
+        if not os.path.exists(target_install_file):
+            target_install_file = self.search_for_install_file()
 
-        with open(target_bashrc, "r") as f:
+        with open(target_install_file, "r") as f:
             install_info = json.load(f)
 
         if "DIR_MACRO" not in install_info:
@@ -126,12 +131,26 @@ class GilInstallController:
         else:
             print("The current repo is not installed!")
 
+    def search_for_install_file(self):
+        current_dir = os.getcwd()
+        find_gilfile_cmd = "find . -name '%s' | head -1" % (self.installation_file,)
+        find_gilfile_output = subprocess.check_output(find_gilfile_cmd, shell=True)
+        find_gilfile_output = find_gilfile_output.decode("utf-8").strip()
+
+        if find_gilfile_output == "":
+            print("No '%s' file found!!!" % (self.installation_file,))
+            exit()
+        else:
+            current_dir = find_gilfile_output
+
+        return current_dir
+
     def install(self, args, extra_args):
         current_dir = os.getcwd()
         if not os.path.exists(self.installation_file):
             find_gilfile_cmd = "find . -name 'install.gil' | xargs -I {} dirname {}"
             find_gilfile_output = subprocess.check_output(find_gilfile_cmd, shell=True)
-            find_gilfile_output = find_gilfile_output.strip()
+            find_gilfile_output = find_gilfile_output.decode("utf-8").strip()
 
             if find_gilfile_output == "":
                 print("No 'install.gil' file found!!!")
@@ -197,6 +216,7 @@ class GilInstallController:
         help_text = "gil-install: generation and installation of projects based on bashrc.sh\n\n"
         help_text = help_text + "\tCreate a installation file:\n\t$ gil-install -c\n\n"
         help_text = help_text + "\tInstall a project:\n\t$ gil-install -i\n\n"
+        help_text = help_text + "\tVerify installation:\n\t$ gil-install -v\n\n"
 
         print(help_text)
 
