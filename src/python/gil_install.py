@@ -40,12 +40,19 @@ def get_git_root(p):
         return root
 
 
+def run_cmd(cmd, return_as_list=False):
+    output = subprocess.check_output(cmd, shell=True)
+    output = output.decode("utf-8").strip()
+    if return_as_list:
+        return output.split("\n")
+
+    return output
+
+
 def get_git_url():
     git_url_cmd = "git config --get remote.origin.url"
-    git_url_output = subprocess.check_output(git_url_cmd, shell=True)
-    git_url_output = git_url_output.strip()
 
-    return git_url_output
+    return run_cmd(git_url_cmd)
 
 
 class GilInstallController:
@@ -76,9 +83,7 @@ class GilInstallController:
             print("Using BASHRC script: " + args[1])
             install_info["BASHRC"] = args[1]
         else:
-            find_bashrc_cmd = "find . -name 'bashrc.sh' | head -1"
-            find_bashrc_output = subprocess.check_output(find_bashrc_cmd, shell=True)
-            find_bashrc_output = find_bashrc_output.strip()
+            find_bashrc_output = run_cmd("find . -name 'bashrc.sh' | head -1")
 
             if find_bashrc_output != "":
                 print("Found BASHRC script: " + find_bashrc_output)
@@ -190,7 +195,7 @@ class GilInstallController:
                 found = False
 
             if found:
-                print("Project already installed!")
+                print(" - Project already installed!")
             else:
                 if os.path.exists(self.config_file):
                     f = open(self.config_file, "a+")
@@ -206,11 +211,17 @@ class GilInstallController:
                     f.write("\n")
                 f.close()
 
-            print("Verify if there aren't any python requirements files")
-            find_requeriments_cmd = (
-                "find . -name 'requirements.txt' | xargs -I {} pip install -r {}"
-            )
+            print(" - Verify if there aren't any python requirements files")
+            find_requeriments_cmd = ()
             subprocess.check_output(find_requeriments_cmd, shell=True)
+            requeriments_files = run_cmd(
+                "find . -name 'requirements.txt'", return_as_list=True
+            )
+            if requeriments_files:
+                for requirement in requeriments_files:
+                    run_cmd("pip install -r %s" % (requirement,))
+            print(" - Save repo in GitRepoWatcher database")
+            run_cmd("source ~/.bashrc && rw -s")
 
     def show_help(self, args, extra_args):
         help_text = "gil-install: generation and installation of projects based on bashrc.sh\n\n"

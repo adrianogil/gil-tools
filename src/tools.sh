@@ -16,7 +16,6 @@ function gil-clone()
     target_folder=$2
     gol $1 $target_folder
     mydirs -s
-    rw -s
     gil-install -i
 }
 
