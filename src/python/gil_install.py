@@ -41,10 +41,22 @@ def get_git_root(p):
 
 
 def run_cmd(cmd, return_as_list=False):
-    output = subprocess.check_output(cmd, shell=True)
-    output = output.decode("utf-8").strip()
-    if return_as_list:
-        return output.split("\n")
+    ibash_exe = "/usr/local/bin/interactive_bash"
+
+    # print('Running cmd %s' % (cmd,))
+
+    try:
+        if os.path.exists(ibash_exe):
+            output = subprocess.check_output(cmd, shell=True, executable=ibash_exe, stderr=DEVNULL)
+        else:
+            output = subprocess.check_output(cmd, shell=True, stderr=DEVNULL)
+
+        output = output.decode("utf-8").strip()
+
+        if return_as_list and output and output.__class__ == str:
+            return output.split("\n")
+    except Exception as _:
+        return None
 
     return output
 
@@ -138,9 +150,9 @@ class GilInstallController:
 
     def search_for_install_file(self):
         current_dir = os.getcwd()
-        find_gilfile_cmd = "find . -name '%s' | head -1" % (self.installation_file,)
-        find_gilfile_output = subprocess.check_output(find_gilfile_cmd, shell=True)
-        find_gilfile_output = find_gilfile_output.decode("utf-8").strip()
+        find_gilfile_output = run_cmd(
+            "find . -name '%s' | head -1" % (self.installation_file,)
+        )
 
         if find_gilfile_output == "":
             print("No '%s' file found!!!" % (self.installation_file,))
@@ -150,28 +162,60 @@ class GilInstallController:
 
         return current_dir
 
+    def get_project_name(self, installfile_path=None, install_data=None):
+        if not install_data:
+            with open(installfile_path, "r") as f:
+                install_data = json.load(f)
+
+        project_name = install_data.get("project_name", None)
+
+        if not project_name:
+            project_path = get_git_root(os.getcwd())
+            project_name = os.basename(project_path)
+
+        return project_name
+
+    def uninstall(self, args, extra_args):
+        installfile_path = run_cmd(
+            "find . -name '%s' | head -1" % (self.installation_file,)
+        )
+        project_name = self.get_project_name(installfile_path)
+
+        if os.path.exists(self.config_file):
+            new_install_lines = []
+            install_lines = []
+            with open(self.config_file, "r") as f:
+                install_lines = f.readlines()
+
+            search_string = "##### %s #####" % (project_name,)
+
+            for line in range(len(install_lines)):
+                if search_string in install_lines[line]:
+                    project_line = line
+                    new_install_lines = install_lines[:project_line] + install_lines[project_line + 6:]
+                    with open(self.config_file, "w") as f:
+                        for new_line in new_install_lines:
+                            f.write(new_line)
+                    break
+        else:
+            print("There is no project installed!")
+
     def install(self, args, extra_args):
         current_dir = os.getcwd()
         if not os.path.exists(self.installation_file):
-            find_gilfile_cmd = "find . -name 'install.gil' | xargs -I {} dirname {}"
-            find_gilfile_output = subprocess.check_output(find_gilfile_cmd, shell=True)
-            find_gilfile_output = find_gilfile_output.decode("utf-8").strip()
+            installfile_path = self.search_for_install_file()
 
-            if find_gilfile_output == "":
+            if installfile_path == "":
                 print("No 'install.gil' file found!!!")
                 exit()
-            else:
-                current_dir = os.path.join(current_dir, find_gilfile_output)
 
-        with open(os.path.join(current_dir, self.installation_file), "r") as f:
+        with open(installfile_path, "r") as f:
             install_info = json.load(f)
 
         if "DIR_MACRO" in install_info:
-
+            repo_name = self.get_project_name(install_data=install_info)
             git_root_path = get_git_root(current_dir)
             git_url = get_git_url()
-
-            repo_name = os.path.basename(git_root_path)
 
             install_macro = install_info["DIR_MACRO"]
 
@@ -196,6 +240,7 @@ class GilInstallController:
 
             if found:
                 print(" - Project already installed!")
+                exit()
             else:
                 if os.path.exists(self.config_file):
                     f = open(self.config_file, "a+")
@@ -212,16 +257,14 @@ class GilInstallController:
                 f.close()
 
             print(" - Verify if there aren't any python requirements files")
-            find_requeriments_cmd = ()
-            subprocess.check_output(find_requeriments_cmd, shell=True)
-            requeriments_files = run_cmd(
-                "find . -name 'requirements.txt'", return_as_list=True
-            )
+            requeriments_files = run_cmd("find %s -name 'requirements.txt'" % (os.getcwd(),), return_as_list=True)
             if requeriments_files:
                 for requirement in requeriments_files:
-                    run_cmd("pip install -r %s" % (requirement,))
+                    if requeriment:
+                        requirement = requirement.strip()
+                        run_cmd("pip install -r %s" % (requeriment,))
             print(" - Save repo in GitRepoWatcher database")
-            run_cmd("source ~/.bashrc && rw -s")
+            # run_cmd("rw -s" % (os.environ["HOME"],))
 
     def show_help(self, args, extra_args):
         help_text = "gil-install: generation and installation of projects based on bashrc.sh\n\n"
@@ -235,11 +278,13 @@ class GilInstallController:
         commands_parse = {
             "-c": self.create,
             "-i": self.install,
+            "-u": self.uninstall,
             "-h": self.show_help,
             "-v": self.verify_installation,
             "--help": self.show_help,
             "--create": self.create,
             "--install": self.install,
+            "--uninstall": self.uninstall,
             "--verify": self.verify_installation,
             # '--list-args'  : self.list_args,
             # '--auto-list'  : self.auto_list,

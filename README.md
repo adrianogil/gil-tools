@@ -22,7 +22,6 @@ Add the following lines to your bashrc:
 export AGIL_SCRIPTS_DIR=/<path-to>/gil-tools/
 source ${AGIL_SCRIPTS_DIR}/bashrc.sh
 ```
-(WIP I am going to create a better setup)
 
 ## Installation - using gil-install
 
@@ -38,8 +37,8 @@ python3 python/gil_install.py -i
 
 
 ## Planned features
+- Add directory to mydirs and GitRepoWatcher
 - Automated way to install all my default tools
 - Setup termux and install all my default tools
 - Automated installation of projects based on bashrc.sh pattern
 - Clone, and go inside directory and create project files based on templates
-- Add directory to mydirs and GitRepoWatcher
