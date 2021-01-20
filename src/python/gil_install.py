@@ -202,7 +202,8 @@ class GilInstallController:
 
     def install(self, args, extra_args):
         current_dir = os.getcwd()
-        if not os.path.exists(self.installation_file):
+        installfile_path = os.path.join(current_dir, self.installation_file)
+        if not os.path.exists(installfile_path):
             installfile_path = self.search_for_install_file()
 
             if installfile_path == "":
