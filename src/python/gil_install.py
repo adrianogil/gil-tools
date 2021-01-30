@@ -28,15 +28,19 @@ def is_float(s):
     return False
 
 
-def get_git_root(p):
+def get_git_root(target_path=None):
     """
-    Returns None if p is not in a git repo, or the root of the repo if it is
+        Returns None if target_path is not in a git repo, or the root of the repo if it is
     """
-    if call(["git", "branch"], stderr=STDOUT, stdout=open(os.devnull, "w"), cwd=p) != 0:
+
+    if target_path is None:
+        target_path = os.getcwd()
+
+    if call(["git", "branch"], stderr=STDOUT, stdout=open(os.devnull, "w"), cwd=target_path) != 0:
         return None
     else:
-        root = check_output(["git", "rev-parse", "--show-toplevel"], cwd=p)
-        root = root.strip()
+        root = check_output(["git", "rev-parse", "--show-toplevel"], cwd=target_path)
+        root = root.decode('utf-8').strip()
         return root
 
 
@@ -81,15 +85,22 @@ class GilInstallController:
         install_info = {}
 
         if len(args) < 1:
-            print(
-                "Error: you should provide at least the name of MACRO that will represent project path"
-            )
+            print("Error: you should provide at least the name of MACRO that will represent project path")
             return
+
+        if len(args) >= 2:
+            project_name = args[2]
+        else:
+            project_name = os.path.basename(get_git_root())
+
+        print('Creating install file for project %s' % (project_name,))
 
         install_macro = args[0]
 
         print("Using MACRO installation: " + install_macro)
         install_info["DIR_MACRO"] = install_macro
+
+        install_info["PROJECT_NAME"] = project_name
 
         if len(args) > 1:
             print("Using BASHRC script: " + args[1])
@@ -107,8 +118,8 @@ class GilInstallController:
             else:
                 print("No BASHRC script was found!")
 
-        with open(self.installation_file, "w") as f:
-            json.dump(install_info, f)
+        with open(self.installation_file, "w") as file_handle:
+            json.dump(install_info, file_handle, indent=4)
 
     def verify_installation(self, args, extra_args):
 
