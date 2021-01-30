@@ -193,16 +193,21 @@ class GilInstallController:
 
             found_config = False
 
-            for line in range(len(install_lines)):
-                if search_string in install_lines[line]:
+            new_install_lines = []
+
+            line_index = 0
+            while line_index < len(install_lines):
+                if search_string in install_lines[line_index]:
                     found_config = True
-                    project_line = line
-                    new_install_lines = install_lines[:project_line] + install_lines[project_line + 6:]
-                    with open(self.config_file, "w") as f:
-                        for new_line in new_install_lines:
-                            f.write(new_line)
-                    break
+                    line_index = line_index + 5
+                else:
+                    new_install_lines.append(install_lines[line_index])
+                line_index += 1
+
             if found_config:
+                with open(self.config_file, "w") as f:
+                    for new_line in new_install_lines:
+                        f.write(new_line)
                 print('Project %s uninstalled' % (project_name,))
             else:
                 print('Error: Project doesn\'t seem installed')
