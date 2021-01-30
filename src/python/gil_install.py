@@ -235,11 +235,14 @@ class GilInstallController:
                 print("No 'install.gil' file found!!!")
                 exit()
 
+        print('Loading configuration from %s' % (installfile_path,))
         with open(installfile_path, "r") as f:
             install_info = json.load(f)
 
         if "DIR_MACRO" in install_info:
             repo_name = self.get_project_name(install_data=install_info)
+            print('Installing project %s' % (repo_name,))
+
             git_root_path = get_git_root(current_dir)
             git_url = get_git_url()
 
@@ -259,9 +262,7 @@ class GilInstallController:
                 found = verify_dir_install_output != ""
             except Exception as _:
                 # Maybe the export does not exist. So let's create it
-                print(
-                    "It seems that export config file does not exist. Let's create it"
-                )
+                print("- It seems that export config file does not exist. Let's create it")
                 found = False
 
             if found:
@@ -272,6 +273,7 @@ class GilInstallController:
                     f = open(self.config_file, "a+")
                 else:
                     f = open(self.config_file, "w+")
+                f.write("\n")
                 f.write("##### %s #####\n" % (repo_name,))
                 f.write("# GitRepo: %s\n" % (git_url,))
                 f.write("# InstallDir: %s\n" % (git_root_path,))
@@ -289,8 +291,10 @@ class GilInstallController:
                     if requeriment:
                         requirement = requirement.strip()
                         run_cmd("pip install -r %s" % (requeriment,))
+            print(" - Save repo in mydirs")
+            run_cmd("mydirs -s")
             print(" - Save repo in GitRepoWatcher database")
-            # run_cmd("rw -s" % (os.environ["HOME"],))
+            run_cmd("rw -s")
 
     def show_help(self, args, extra_args):
         help_text = "gil-install: generation and installation of projects based on bashrc.sh\n\n"
