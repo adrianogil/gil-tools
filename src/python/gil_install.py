@@ -300,6 +300,7 @@ class GilInstallController:
         help_text = "gil-install: generation and installation of projects based on bashrc.sh\n\n"
         help_text = help_text + "\tCreate a installation file:\n\t$ gil-install -c\n\n"
         help_text = help_text + "\tInstall a project:\n\t$ gil-install -i\n\n"
+        help_text = help_text + "\tUninstall a project:\n\t$ gil-install -u\n\n"
         help_text = help_text + "\tVerify installation:\n\t$ gil-install -v\n\n"
 
         print(help_text)
