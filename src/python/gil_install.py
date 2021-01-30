@@ -181,6 +181,8 @@ class GilInstallController:
         )
         project_name = self.get_project_name(installfile_path)
 
+        print('Uninstalling project %s' % (project_name,))
+
         if os.path.exists(self.config_file):
             new_install_lines = []
             install_lines = []
@@ -189,16 +191,23 @@ class GilInstallController:
 
             search_string = "##### %s #####" % (project_name,)
 
+            found_config = False
+
             for line in range(len(install_lines)):
                 if search_string in install_lines[line]:
+                    found_config = True
                     project_line = line
                     new_install_lines = install_lines[:project_line] + install_lines[project_line + 6:]
                     with open(self.config_file, "w") as f:
                         for new_line in new_install_lines:
                             f.write(new_line)
                     break
+            if found_config:
+                print('Project %s uninstalled' % (project_name,))
+            else:
+                print('Error: Project doesn\'t seem installed')
         else:
-            print("There is no project installed!")
+            print("Error: Project directory can't be found!")
 
     def install(self, args, extra_args):
         current_dir = os.getcwd()
