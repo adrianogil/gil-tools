@@ -46,6 +46,11 @@ def get_git_root(target_path=None):
 
 
 def run_cmd(cmd, return_as_list=False):
+    """
+        Run a command using interactive_bash 
+        In case interactive_bash doesn't exists, it's automatically create a new one
+        By using interactive_bash it guarantees that ~/.bashrc is loaded
+    """
     ibash_exe = "/usr/local/bin/interactive_bash"
 
     import pathlib
@@ -242,6 +247,8 @@ class GilInstallController:
                 print("No 'install.gil' file found!!!")
                 exit()
 
+        installfile_dir = os.path.dirname(os.path.abspath(installfile_path))
+
         print('Loading configuration from %s' % (installfile_path,))
         with open(installfile_path, "r") as f:
             install_info = json.load(f)
@@ -284,7 +291,7 @@ class GilInstallController:
                 f.write("##### %s #####\n" % (repo_name,))
                 f.write("# GitRepo: %s\n" % (git_url,))
                 f.write("# InstallDir: %s\n" % (git_root_path,))
-                f.write("export %s=%s\n" % (install_macro, current_dir))
+                f.write("export %s=%s\n" % (install_macro, installfile_dir))
 
                 if "BASHRC" in install_info:
                     f.write("source $%s/%s\n" % (install_macro, install_info["BASHRC"]))
@@ -330,12 +337,7 @@ class GilInstallController:
         }
         return commands_parse
 
-
-controller = GilInstallController()
-commands_parse = controller.get_commands()
-
-
-def parse_arguments():
+def parse_arguments(controller):
 
     args = {}
 
@@ -358,7 +360,7 @@ def parse_arguments():
     return args
 
 
-def parse_commands(args):
+def parse_commands(commands_parse, args):
     if args is None:
         return
 
@@ -369,7 +371,10 @@ def parse_commands(args):
 
 
 if __name__ == '__main__':
-    args = parse_arguments()
-    parse_commands(args)
+    controller = GilInstallController()
+    commands_parse = controller.get_commands()
+
+    args = parse_arguments(controller)
+    parse_commands(commands_parse, args)
 
     controller.finish()
