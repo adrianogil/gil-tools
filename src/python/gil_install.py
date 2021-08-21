@@ -7,6 +7,7 @@
 from subprocess import *
 
 import subprocess
+import shutil
 import json
 import sys
 import os
@@ -47,12 +48,18 @@ def get_git_root(target_path=None):
 def run_cmd(cmd, return_as_list=False):
     ibash_exe = "/usr/local/bin/interactive_bash"
 
-    # print('Running cmd %s' % (cmd,))
+    import pathlib
+
+    # Create ibash_exe if doesnt exists
+    if not os.path.exists(ibash_exe):
+        local_ibash_path = pathlib.Path(__file__).parent.parent.joinpath("bin").joinpath("interactive_bash").resolve()
+        shutil.copy(local_ibash_path, ibash_exe)
 
     try:
         if os.path.exists(ibash_exe):
             output = subprocess.check_output(cmd, shell=True, executable=ibash_exe, stderr=DEVNULL)
         else:
+            print('Warning: /usr/local/bin/interactive_bash doesn\'t exists. You may want to create it')
             output = subprocess.check_output(cmd, shell=True, stderr=DEVNULL)
 
         output = output.decode("utf-8").strip()
@@ -361,7 +368,8 @@ def parse_commands(args):
             commands_parse[a](args[a], args)
 
 
-args = parse_arguments()
-parse_commands(args)
+if __name__ == '__main__':
+    args = parse_arguments()
+    parse_commands(args)
 
-controller.finish()
+    controller.finish()
