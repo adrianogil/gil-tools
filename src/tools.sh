@@ -8,14 +8,32 @@ function install_mac_utils()
     brew install exa
 }
 
+
+TEMP_REPOS_DIR=/tmp/tmp_repos/
+
 function gil-clone()
 {
     # git clone and enter repo directory
 
+    current_dir=$PWD
+
+    mkdir -p ${TEMP_REPOS_DIR}
+    cd ${TEMP_REPOS_DIR}
+
     target_url=$1
     target_folder=$2
     gol $1 $target_folder
-    mydirs -s
+
+    new_dir=$(gil-install --verify-dir ${current_dir})
+
+    repo_folder_name=${PWD##*/}
+
+    cd..
+
+    mv ${repo_folder_name} ${new_dir}/
+
+    cd ${new_dir}/repo_folder_name
+
     gil-install -i
 }
 

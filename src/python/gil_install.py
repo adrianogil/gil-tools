@@ -310,6 +310,66 @@ class GilInstallController:
             print(" - Save repo in GitRepoWatcher database")
             run_cmd("rw -s")
 
+    def load_install_file(self, path='install.gil'):
+        if not os.path.exists(path):
+            return None
+
+        install_info = None
+
+        with open(path, "r") as f:
+            install_info = json.load(f)
+
+        return install_info
+
+
+    def verify_install_dir(self, args, extra_args):
+        """
+            Returns the directory it should be installed
+        """
+        default_dir = args[0]
+
+        install_data = self.load_install_file()
+
+        if not install_data:
+            print(default_dir)
+            return
+
+        install_dir = default_dir
+
+        if 'default_path' in install_data:
+            install_dir = run_cmd('echo ' + install_data["default_path"])
+
+        print(install_dir)
+
+    def list_installs(self, args, extra_args):
+        if not os.path.exists(self.config_file):
+            print("No projects installed")
+            return
+
+        search_string = ""
+        if len(args) > 0:
+            search_string = args[0]
+
+        new_install_lines = []
+        install_lines = []
+        with open(self.config_file, "r") as f:
+            install_lines = f.readlines()
+
+        project_name_list = []
+
+        print("Installed projects")
+        for line in install_lines:
+            if line.startswith("##### "):
+                end = line.index(" #####")
+                repo_name = line[6:end]
+                if not search_string or search_string in repo_name:
+                    project_name_list.append(repo_name)
+
+        project_name_list = sorted(project_name_list)
+
+        for project_name in project_name_list:
+            print("- %s" % (project_name,))
+
     def show_help(self, args, extra_args):
         help_text = "gil-install: generation and installation of projects based on bashrc.sh\n\n"
         help_text = help_text + "\tCreate a installation file:\n\t$ gil-install -c\n\n"
@@ -326,11 +386,13 @@ class GilInstallController:
             "-u": self.uninstall,
             "-h": self.show_help,
             "-v": self.verify_installation,
+            "-l": self.list_installs,
             "--help": self.show_help,
             "--create": self.create,
             "--install": self.install,
             "--uninstall": self.uninstall,
             "--verify": self.verify_installation,
+            "--verify-dir": self.verify_install_dir,
             # '--list-args'  : self.list_args,
             # '--auto-list'  : self.auto_list,
             # 'no-args'      : self.handle_no_args,

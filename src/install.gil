@@ -2,5 +2,6 @@
   "BASHRC": "bashrc.sh",
   "DIR_MACRO": "AGIL_SCRIPTS_DIR",
   "project_name": "gil-tools",
-  "target_python_venv": "gtools"
+  "target_python_venv": "gtools",
+  "default_path": "$WORKSPACE/scripts"
 }
