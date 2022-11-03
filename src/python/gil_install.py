@@ -302,9 +302,9 @@ class GilInstallController:
             requeriments_files = run_cmd("find %s -name 'requirements.txt'" % (os.getcwd(),), return_as_list=True)
             if requeriments_files:
                 for requirement in requeriments_files:
-                    if requeriment:
+                    if requirement:
                         requirement = requirement.strip()
-                        run_cmd("pip install -r %s" % (requeriment,))
+                        run_cmd("pip install -r %s" % (requirement,))
             print(" - Save repo in mydirs")
             run_cmd("mydirs -s")
             print(" - Save repo in GitRepoWatcher database")
