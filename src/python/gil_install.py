@@ -57,9 +57,11 @@ def run_cmd(cmd, return_as_list=False):
 
     # Create ibash_exe if doesnt exists
     if not os.path.exists(ibash_exe):
-        local_ibash_path = pathlib.Path(__file__).parent.parent.joinpath("bin").joinpath("interactive_bash").resolve()
-        shutil.copy(local_ibash_path, ibash_exe)
-
+        try:
+            local_ibash_path = pathlib.Path(__file__).parent.parent.joinpath("bin").joinpath("interactive_bash").resolve()
+            shutil.copy(local_ibash_path, ibash_exe)
+        except Exception as exception:
+            print("Error while trying to create an interactive_bash script: ", exception)
     try:
         if os.path.exists(ibash_exe):
             output = subprocess.check_output(cmd, shell=True, executable=ibash_exe, stderr=DEVNULL)
