@@ -196,6 +196,8 @@ class GilInstallController:
 
         if not project_name:
             project_path = get_git_root(os.getcwd())
+            if project_path is None:
+                project_path = os.getcwd()
             project_name = os.path.basename(project_path)
 
         return project_name
