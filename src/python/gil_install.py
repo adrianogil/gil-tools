@@ -19,6 +19,10 @@ except NameError:
     pass
 
 
+def is_termux():
+    return hasattr(sys, 'getandroidapilevel')
+
+
 def is_float(s):
     try:
         float(s)
@@ -56,14 +60,14 @@ def run_cmd(cmd, return_as_list=False):
     import pathlib
 
     # Create ibash_exe if doesnt exists
-    if not os.path.exists(ibash_exe):
+    if not is_termux() and not os.path.exists(ibash_exe):
         try:
             local_ibash_path = pathlib.Path(__file__).parent.parent.joinpath("bin").joinpath("interactive_bash").resolve()
             shutil.copy(local_ibash_path, ibash_exe)
         except Exception as exception:
             print("Error while trying to create an interactive_bash script: ", exception)
     try:
-        if os.path.exists(ibash_exe):
+        if is_termux() or os.path.exists(ibash_exe):
             output = subprocess.check_output(cmd, shell=True, executable=ibash_exe, stderr=DEVNULL)
         else:
             print('Warning: /usr/local/bin/interactive_bash doesn\'t exists. You may want to create it')
