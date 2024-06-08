@@ -13,8 +13,7 @@ TEMP_REPOS_DIR=/tmp/tmp_repos/
 
 function gil-clone()
 {
-    # git clone and enter repo directory
-
+    # git clone, enter repo directory and setup as gil-project
     current_dir=$PWD
 
     mkdir -p ${TEMP_REPOS_DIR}
@@ -22,17 +21,25 @@ function gil-clone()
 
     target_url=$1
     target_folder=$2
+
+    if [ -z "$target_folder" ]; then
+        target_folder=${target_url##*/}
+        # remove .git
+        target_folder=${target_folder%.git}
+    fi
+
+    echo "# Downloading repo"
     gol $1 $target_folder
 
-    new_dir=$(gil-install --verify-dir ${current_dir})
-
-    repo_folder_name=${PWD##*/}
+    default_target_folder=${current_dir}/${target_folder}
+    new_dir=$(gil-install --verify-dir ${default_target_folder})
 
     cd..
 
-    mv ${repo_folder_name} ${new_dir}/
+    echo "# Cloning repo to ${new_dir}"
+    mv ${TEMP_REPOS_DIR}/${target_folder} ${new_dir}/
 
-    cd ${new_dir}/repo_folder_name
+    cd ${new_dir}/
 
     gil-install -i
 }
