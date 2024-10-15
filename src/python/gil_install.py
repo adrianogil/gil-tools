@@ -51,7 +51,7 @@ def get_git_root(target_path=None):
 
 def run_cmd(cmd, return_as_list=False):
     """
-        Run a command using interactive_bash 
+        Run a command using interactive_bash
         In case interactive_bash doesn't exists, it's automatically create a new one
         By using interactive_bash it guarantees that ~/.bashrc is loaded
     """
@@ -119,6 +119,10 @@ class GilInstallController:
         install_info["DIR_MACRO"] = install_macro
 
         install_info["PROJECT_NAME"] = project_name
+
+        if '-cat' in extra_args or '--category' in extra_args:
+            install_info["CATEGORY"] = extra_args['-cat'] if '-cat' in extra_args else extra_args['--category']
+            print("Using categories " + install_info["CATEGORY"])
 
         if len(args) > 1:
             print("Using BASHRC script: " + args[1])
@@ -316,7 +320,11 @@ class GilInstallController:
             print(" - Save repo in mydirs")
             run_cmd("mydirs -s")
             print(" - Save repo in GitRepoWatcher database")
-            run_cmd("rw -s")
+
+            if "CATEGORY" in install_info:
+                run_cmd("rw -s -c " + " ".join(install_info["CATEGORY"]))
+            else:
+                run_cmd("rw -s")
 
     def load_install_file(self, path='install.gil'):
         if not os.path.exists(path):
